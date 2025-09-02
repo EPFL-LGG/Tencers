@@ -1,0 +1,6 @@
+[submodule "3rdparty/ElasticRods_fork_tencers"]
+	path = 3rdparty/ElasticRods
+	url = git@github.com:EPFL-LGG/ElasticRods_fork_tencers.git
+[submodule "3rdparty/libigl"]
+	path = 3rdparty/libigl
+	url = git@github.com:jpanetta/libigl.git
