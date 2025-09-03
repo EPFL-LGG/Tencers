@@ -1,0 +1,30 @@
+# Development tools
+.DS_Store
+.idea
+.vscode
+*.mtl
+*.blend
+*.ods
+*.ply
+*.odt
+*.mesh
+*.msh
+*.blend
+*.blend1
+*.sol
+*.so
+*.pkl
+*.obj
+*.json
+
+# build folders
+build
+debug
+build_debug
+cmake-build-debug
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*__pycache__*
+
+python/MeshFEM/
