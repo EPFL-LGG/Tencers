@@ -151,7 +151,7 @@ add_library(Tencers
 )
 set_target_properties(Tencers PROPERTIES CXX_STANDARD 14)
 set_target_properties(Tencers PROPERTIES CXX_STANDARD_REQUIRED ON)
-target_link_libraries(Tencers PUBLIC ElasticRods MeshFEM igl::core)
+target_link_libraries(Tencers PUBLIC ElasticRods MeshFEM)
 target_include_directories(Tencers PUBLIC ./src)
 target_include_directories(Tencers PUBLIC ${THIRD_PARTY_DIR})
 
