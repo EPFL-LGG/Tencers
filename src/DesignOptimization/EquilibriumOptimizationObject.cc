@@ -19,7 +19,7 @@ EquilibriumOptimizationObject<Object_T,EType>::EquilibriumOptimizationObject(Obj
     // fixed variables
     m_fixedVars.insert(std::end(m_fixedVars), std::begin(fixedVars), std::end(fixedVars));
 
-    m_equilibrium_optimizer = get_equilibrium_optimizer(m_linesearch_object, m_fixedVars, m_equilibrium_options, nullptr,safe_numeric_limits<Real>::max(),1e-6,hessian_shift);
+    m_equilibrium_optimizer = get_equilibrium_optimizer(m_linesearch_object, m_fixedVars, m_equilibrium_options, nullptr,Eigen::VectorXd(),safe_numeric_limits<Real>::max(),1e-6,hessian_shift);
     prediction_order = po;
 
     // Ensure we start at an equilibrium (using the passed equilibrium solver options)

@@ -290,27 +290,6 @@ PYBIND11_MODULE(tencers, m) {
 
         .def("massMatrix",py::overload_cast<>(&Tencer::massMatrix, py::const_))
 
-       
-        // pickling
-        // TODO
-        // .def(py::pickle([](const Tencer &knot) {
-        //         return py::make_tuple(
-        //             knot.get_open_rods(), 
-        //             knot.get_closed_rods(), 
-        //             knot.get_springs(), 
-        //             knot.get_attachment_vertices(), 
-        //             knot.get_target_rods()
-        //         );
-        //     },
-        //     [](const py::tuple &t) {
-        //         if (t.size() != 6) throw std::runtime_error("Invalid state!");
-        //         std::vector<ElasticRod> open_rods = t[0].cast<std::vector<ElasticRod>>();
-        //         std::vector<PeriodicRod> closed_rods = t[1].cast<std::vector<PeriodicRod>>();
-        //         std::vector<Spring> springs = t[2].cast<std::vector<Spring>>();
-        //         std::vector<SpringAttachmentVertices> attachment_vertices = t[3].cast<std::vector<SpringAttachmentVertices>>();
-        //         std::vector<ElasticRod> target_rods = t[5].cast<std::vector<ElasticRod>>();
-        //         return Tencer(open_rods, closed_rods, springs, attachment_vertices, target_rods);
-        //     }))
     ;
 
 
@@ -515,12 +494,14 @@ PYBIND11_MODULE(tencers, m) {
     
 
     m.def("computeEquilibrium",
-    [](Tencer &obj, const std::vector<size_t> &fixedVars, const NewtonOptimizerOptions &opts, PyCallbackFunction pcb, Real systemEnergyIncreaseFactorLimit, Real energyLimitingThreshold, Real hessianShift) {
-            return compute_equilibrium(obj, fixedVars, opts, callbackWrapper(pcb), systemEnergyIncreaseFactorLimit, energyLimitingThreshold, hessianShift);
+    [](Tencer &obj, const std::vector<size_t> &fixedVars, const NewtonOptimizerOptions &opts, PyCallbackFunction pcb, Eigen::VectorXd external_forces, Real systemEnergyIncreaseFactorLimit, Real energyLimitingThreshold, Real hessianShift) {
+            return compute_equilibrium(obj, fixedVars, opts, callbackWrapper(pcb), external_forces, systemEnergyIncreaseFactorLimit, energyLimitingThreshold, hessianShift);
         },
         py::arg("tencer"),
         py::arg("fixedVars") = std::vector<size_t>(), 
-        py::arg("opts") = NewtonOptimizerOptions(), py::arg("cb") = nullptr,
+        py::arg("opts") = NewtonOptimizerOptions(), 
+        py::arg("cb") = nullptr,
+        py::arg("external_forces") = Eigen::VectorXd(),
         py::arg("systemEnergyIncreaseFactorLimit") = safe_numeric_limits<Real>::max(), 
         py::arg("energyLimitingThreshold") = 1e-6,
         py::arg("hessianShift") = 0.0,
