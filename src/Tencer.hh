@@ -321,6 +321,10 @@ struct Tencer_T {
         return result;
     }
 
+    // Visualization tools 
+    void visualizationGeometry(std::vector<MeshIO::IOVertex > &vertices,
+                               std::vector<MeshIO::IOElement> &quads,
+                               const bool averagedMaterialFrames = false) const;
 
     
 

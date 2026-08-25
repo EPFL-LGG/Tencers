@@ -33,6 +33,7 @@
 #include "../src/SlidingNode.hh"
 #include "../src/SlidingNode.cc"
 #include "../src/TencerEquilibriumProblem.hh"
+#include "../3rdparty/ElasticRods/python_bindings/visualization.hh"
 
 
 namespace py = pybind11;
@@ -70,6 +71,7 @@ PYBIND11_MODULE(tencers, m) {
     using KnotEnergyType = typename Tencer::KnotEnergyType;
     using EnergyType = typename Tencer::EnergyType;
     using Vec3 = Eigen::Matrix<double, 3, 1>;
+    using CompressionType = typename Spring::CompressionType;
     
 
     py::enum_<OptAlgorithm>(m, "OptAlgorithm")
@@ -107,11 +109,16 @@ PYBIND11_MODULE(tencers, m) {
         .value( "All", VariableMask::All)
         ;
 
+    py::enum_<CompressionType>(m, "CompressionType")
+        .value("Compression", CompressionType::Compression)
+        .value("NoCompression", CompressionType::NoCompression)
+    ;
+
     using PySp = py::class_<Spring, std::shared_ptr<Spring>>;
     auto spring = PySp(m,"Spring");
 
     spring
-        .def(py::init<Vec3 &, Vec3 &, double, double>(), py::arg("coordA"), py::arg("coordB"),py::arg("stiffness"),py::arg("rest_length"))
+        .def(py::init<Vec3 &, Vec3 &, double, double, CompressionType, Real>(), py::arg("coordA"), py::arg("coordB"),py::arg("stiffness"),py::arg("rest_length"), py::arg("compression_type") = CompressionType::Compression, py::arg("tol") = 1e-3)
         .def(py::init<const Spring &>())  // copy constructor
         .def("get_coords", &Spring::get_coords)
         .def("energy",     &Spring::energy)
@@ -133,6 +140,7 @@ PYBIND11_MODULE(tencers, m) {
         .def_readwrite("stiffness", &Spring::stiffness)
         .def("get_rest_vars_type",  &Spring::get_rest_vars_type)
         .def("get_rest_length", &Spring::get_rest_length)
+        .def_readonly("compression_type", &Spring::compression_type)
 
         // pickling
         // TODO
@@ -289,6 +297,7 @@ PYBIND11_MODULE(tencers, m) {
         .def("applyHessian", &Tencer::apply_hessian, py::arg("direction"), py::arg("mask") = HessianComputationMask())
 
         .def("massMatrix",py::overload_cast<>(&Tencer::massMatrix, py::const_))
+        .def("visualizationGeometry", &getVisualizationGeometry<Tencer>, py::arg("averagedMaterialFrames") = true)
 
     ;
 
