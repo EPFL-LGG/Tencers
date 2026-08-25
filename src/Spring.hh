@@ -4,12 +4,17 @@
 
 template <typename Real_>
 struct  Spring_T {
-
-    enum class RestVarsType {
-        StiffnessOnVerticesFast,   // k only, with spring nodes on vertices; specialized implementation that can be faster than the more general Stiffness
-        Stiffness,                 // k only, with spring nodes anywhere on edges (u does not necessarily match with any reference material variable)
+    
+    enum class RestVarsType { 
+        StiffnessOnVerticesFast,   // k only, with spring nodes on vertices; due to the current implementation of sliding nodes, this is faster at the moment (TODO MICHELE: we should be able to get rid of this option once the sliding node implementation is properly optimized)
+        Stiffness,                 // k only, with spring nodes on edges (u does not necessarily match with any reference material variable)
         SpringAnchors,             // u only
         StiffnessAndSpringAnchors  // k and u
+    };
+
+    enum class CompressionType {
+        Compression,
+        NoCompression
     };
 
     using Vec2_T = Eigen::Matrix<Real_, 2, 1>;
@@ -25,10 +30,12 @@ struct  Spring_T {
     std::shared_ptr<Node_T<Real_>> position_A;
     std::shared_ptr<Node_T<Real_>> position_B;
     Real_ stiffness;
-    double rest_length;
+    Real_ rest_length;
+    CompressionType compression_type;
+    Real compression_tolerance;
 
-    Spring_T(Vec3_T &pA, Vec3_T &pB, Real_ s, double l = 0);
-    Spring_T(const std::shared_ptr<Node_T<Real_>> &pA, const std::shared_ptr<Node_T<Real_>> &pB, Real_ s, double l = 0);
+    Spring_T(Vec3_T &pA, Vec3_T &pB, Real_ s, Real_ l = 0, CompressionType c = CompressionType::Compression, Real tol = 1e-3);
+    Spring_T(const std::shared_ptr<Node_T<Real_>> &pA, const std::shared_ptr<Node_T<Real_>> &pB, Real_ s, Real_ l = 0, CompressionType c = CompressionType::Compression, Real tol = 1e-3);
 
     // Copy constructor converting from another floating point type (e.g., double to autodiff)
     template<typename Real_2>
@@ -79,6 +86,11 @@ struct  Spring_T {
 
         stiffness = sp.stiffness;
         rest_length = sp.rest_length;
+        compression_tolerance = sp.compression_tolerance;
+        if (sp.compression_type == Spring_T<Real_2>::CompressionType::Compression){
+            compression_type = CompressionType::Compression;
+        }
+        else compression_type = CompressionType::NoCompression;
 
         // Set rest_vars_type
         if (sp.get_rest_vars_type() == Spring_T<Real_2>::RestVarsType::StiffnessOnVerticesFast)
@@ -118,7 +130,14 @@ struct  Spring_T {
     VecX_T d2E_dxdk() const;
     VecX_T d2E_dxdu() const;
 
-    
+    // Derivative needed for bifurcations
+    Real_ dE_dl0() const;
+    Real_ d2E_dl02() const;
+    VecX_T d2E_dxdl0() const;
+
+    Real_ Q(Real_ x) const;
+    Real_ dQ_dx(Real_ x) const;
+    Real_ d2Q_dx2(Real_ x) const;
 
     size_t numRestVars() const {
         if      (rest_vars_type == RestVarsType::StiffnessOnVerticesFast)   return 1;
@@ -132,9 +151,15 @@ struct  Spring_T {
     RestVarsType get_rest_vars_type() const { return rest_vars_type; }
 
     VecX_T get_coords() const;
+    void set_coords(VecX_T coords);
     Vec3_T coords_diff() const;
-    double get_rest_length() const {return rest_length;}
+    Real_ get_rest_length() const {return rest_length;}
     bool has_zero_rest_length() const { return rest_length == 0.0; }
+
+    // Inverse design
+    Real_ force_norm() const;
+    Real_ d_force_norm_dL0() const;
+    VecX_T d_force_norm_dx() const;
 
 protected:
 

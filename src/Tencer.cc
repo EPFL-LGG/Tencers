@@ -658,6 +658,19 @@ VecX_T<Real_> Tencer_T<Real_>::springs_gradient_defo() const{
     return result;
 }
 
+/*
+ * Visualization tools
+ */
+template <typename Real_>
+void Tencer_T<Real_>::visualizationGeometry(std::vector<MeshIO::IOVertex > &vertices,std::vector<MeshIO::IOElement> &quads,const bool averagedMaterialFrames) const {
+    for (const auto &er : open_rods){
+        er.visualizationGeometry(vertices, quads, averagedMaterialFrames);
+    }
+    for (const auto &pr : closed_rods){
+        pr.rod.visualizationGeometry(vertices, quads, averagedMaterialFrames);
+    }
+}
+
 template <typename Real_>
 VecX_T<Real_> Tencer_T<Real_>::springs_gradient_rest() const{
     BENCHMARK_START_TIMER_SECTION("Tencer springs_gradient_rest");
